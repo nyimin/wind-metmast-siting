@@ -1,8 +1,8 @@
-# Terrain Complexity Analysis Report
-# MCDA Met Mast & LiDAR Siting
+# Wind Resource Assessment: Terrain Complexity & Measurement Siting Memo
 
-> **Generated:** 2026-03-05 11:34 UTC
-> **Methodology:** WAsP RIX (ruggedness index) & Multi-Criteria spatial analysis
+> **Generated:** 2026-03-05 11:59 UTC
+> **Data Source:** NASADEM 30m resolution 
+> **Methodology:** WAsP RIX (ruggedness index), Topographic Position Index (TPI), and Multi-Criteria spatial analysis
 
 ---
 
@@ -11,17 +11,17 @@
 | Parameter | Value |
 |-----------|-------|
 | **Terrain Complexity Class** | **Semi-Complex Terrain** |
-| **Site WAsP RIX (mean)** | 0.01 % |
+| **Max Site WAsP RIX** | 0.01 % |
 | **Max Terrain Slope** | 20.87 % |
-| **Complex Terrain (WAsP > 0)** | **FALSE ✅** |
+| **Complex Terrain (CFD Recommended)** | **FALSE ✅** |
 
 ### ⭐ Top 3 Optimal Measurement Candidate Sites
 
 | Rank | Latitude | Longitude | Easting | Northing | Elevation | Suitability Score |
 |------|----------|-----------|---------|----------|-----------|-------------------|
-| **1** | 20.73089° N | 94.88381° E | 696,158 m | 2,293,506 m | 260.6 m | **0.885** |
-| **2** | 20.73933° N | 94.87532° E | 695,263 m | 2,294,431 m | 235.7 m | **0.881** |
-| **3** | 20.72959° N | 94.87921° E | 695,680 m | 2,293,357 m | 253.0 m | **0.878** |
+| **1** | 20.74122° N | 94.87477° E | 695,203 | 2,294,640 | 233.5 m | **0.920** |
+| **2** | 20.72627° N | 94.88690° E | 696,486 | 2,292,999 | 264.8 m | **0.867** |
+| **3** | 20.71621° N | 94.87017° E | 694,755 | 2,291,865 | 239.6 m | **0.804** |
 
 **✅ The site is NOT classified as complex terrain.**
 
@@ -41,38 +41,37 @@
 
 ## 3. Spatial Objective Setup (MCDA)
 
-A Multi-Criteria Decision Analysis (MCDA) algorithm defines measurement suitability. The algorithm scores every pixel inside the site from 0.0 to 1.0 based on the following weighted objectives:
+A Multi-Criteria Decision Analysis (MCDA) framework determines measurement site suitability. A score from 0.0 to 1.0 is synthesized based on professional siting criteria:
 
-- **Elevation (Weight: 0.3):** Pushes sites towards higher elevations (ridges, plateaus) to be representative of turbine installations.
-- **Land Use Suitability (Weight: 0.3):** Highly favors grass/bare land, avoids water, built-up areas, and forests (due to high displacement heights and induced turbulence).
-- **Centrality (Weight: 0.2):** Pulls sites towards the geometric centroid of the parcel for maximum spatial coverage.
-- **Flatness/Low-RIX (Weight: 0.2):** Pushes sites away from rugged zones (WAsP RIX) reducing flow separation turbulence.
-- **Constraints (Exclusions):** Excludes areas within 200m of the site boundary, and strictly excludes local slopes > 10.0% (IEC 61400-1 installation limits).
+- **Topographic Position Index (TPI) (Weight: 0.25):** Evaluates ridge vs valley placement over a 2.0 km radius. Strongly preferencing positive TPI (ridges) for undisturbed dominant flow.
+- **Elevation Representativeness (Weight: 0.25):** Targets the 75th percentile of site elevation to ensure measurements are representative of potential turbine array heights, avoiding unrepresentative valley or absolute peak placements.
+- **Aerodynamic Distance & LULC (Weight: 0.15):** Buffers heavily forested areas (200.0 m) to reduce uncertainty from displacement heights and induced turbulence. Highly favors grass/bare land.
+- **Flatness/Low-RIX (Weight: 0.15):** Pushes sites away from rugged zones reducing flow separation turbulence near the mast.
+- **Centrality (Weight: 0.2):** Pulls sites towards the geometric centroid of the parcel for maximum spatial representation.
+- **Constraints (Exclusions):** Excludes areas within 200m of boundaries, strictly excludes local slopes > 10.0% (IEC 61400-1 limits), and ensures candidate sites are spaced >2km apart.
 
 ---
 
-## 4. Methodologies
+## 4. Methodologies & Uncertainty Limitations
 
 ### 4.1 Terrain Categorical Classification
-Wind industry best practice typically applies linearised micro-siting models (like WAsP) cautiously. General heuristics for site classification have been applied:
-- **Simple Terrain:** Max Slope < 10% AND Mean Site RIX = 0%. Standard models perform perfectly with low uncertainty.
-- **Semi-Complex Terrain:** Max Slope > 10% BUT Mean Site RIX <= 5%. True complex terrain is highly localized. Standard flow modelling may still be acceptable if turbines are micro-sited away from steep slopes.
-- **Complex Terrain:** Mean Site RIX > 5%. Significant widespread flow detachment. Linear models break down; advanced CFD evaluation is highly recommended.
+Wind industry best practice relies on the Maximum WAsP RIX to classify the overall site, minimizing the dilution effect of mean averages in widespread flat sites containing localized cliffs.
 
-**Based on the analysis, this site is classified as: Semi-Complex Terrain**
+- **Simple Terrain:** Max Slope < 15% and Max RIX < 0.5%. Linear models perform perfectly with low uncertainty.
+- **Semi-Complex Terrain:** Max Slope > 15% but Max RIX <= 5%. Flow separation is localized. Standard modelling is acceptable if turbines are micro-sited carefully.
+- **Complex Terrain:** Max RIX > 5%. Significant widespread flow detachment. Advanced CFD evaluation is required.
 
-### 4.2 WAsP RIX Methodology
+**Classification Result: Semi-Complex Terrain**
 
-The true WAsP Ruggedness Index (RIX) is defined using a 30% slope threshold:
+### 4.2 WAsP RIX & TPI Methodology
+- **WAsP RIX:** Fractional area of terrain > 30% slope within a 3.5 km radius focal window.
+- **TPI:** The difference between a focal pixel's elevation and the mean elevation within a 2.0 km focal window.
 
-1. **Binary slope mask** — Every pixel where slope > 30% is marked.
-2. **Circular kernel** — A 2D circular window of radius **3.5 km** (117 pixels) is constructed.
-3. **Focal convolution** — Computes the fractional area of complex terrain within the neighbourhood of *every* pixel.
+### 4.3 Uncertainty & Limitations
+- **DEM Resolution:** NASADEM 30m may underrepresent localized sharp terrain changes (e.g. sharp escarpments or micro-terrain roughness) which a 5m LiDAR DEM could capture.
+- **Lack of Wind Direction Analytics:** The MCDA framework does not account for prevailing wind direction. If wind roses are available, measurements should ideally be placed upwind or free from wake of prominent ridges in the dominant flow sector.
 
-> **RIX(x,y)** = (Area with slope > 30% within 3.5 km) / (Total Valid Area) × 100
-
-### 4.2 Slope Distribution
-
+### 4.4 Slope Distribution
 | Slope Range | Area (%) | Distribution |
 |-------------|----------|--------------|
 | 0–2 %      |  15.10 % | ████████ |
@@ -89,11 +88,11 @@ The true WAsP Ruggedness Index (RIX) is defined using a 30% slope threshold:
 
 ### ✅ Terrain Within Standard Limits
 
-Standard procedures should be sufficient:
+Standard measurement and flow modelling procedures should be sufficient:
 
-1. **Linearised flow models** (WAsP, OpenWind) are expected to perform adequately.
-2. **Standard measurement campaigns** can be used.
-3. **Deploy Measurement Equipment** — Primary recommended site: (20.730886°N, 94.883810°E).
+1. **Linearised flow models** (WAsP, OpenWind) are expected to perform adequately with low uncertainty.
+2. **Measurement Strategy** — Standard measurement campaigns (Met Masts) can be used. Primary recommended site: (20.741224°N, 94.874772°E).
+3. **Array Micro-siting** — Ensure turbines are not sited exactly on the minor local slopes exceeding 15%.
 
 
 ---
@@ -107,4 +106,4 @@ Standard procedures should be sufficient:
 
 ---
 
-*Report generated automatically by `main.py` spatial analysis pipeline.*
+*Report generated automatically by the Terrain Analysis Pipeline.*

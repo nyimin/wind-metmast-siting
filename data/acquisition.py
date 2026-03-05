@@ -1,6 +1,6 @@
-# data_loading.py
+# data/acquisition.py
 """
-Data loading and DEM acquisition module.
+Data loading and DEM/LULC acquisition module.
 Retrieves and pre-processes spatial data required for wind site analysis.
 """
 
@@ -18,7 +18,7 @@ import requests
 from pystac_client import Client
 import planetary_computer as pc
 
-from config import DEM_COLLECTION, LULC_COLLECTION, DEM_CACHE_DIR
+from config.settings import DEM_COLLECTION, LULC_COLLECTION, DEM_CACHE_DIR
 
 
 def load_and_reproject(gpkg_path: str) -> tuple[gpd.GeoDataFrame, gpd.GeoDataFrame]:
@@ -254,7 +254,6 @@ def fetch_lulc(gdf_buffer_wgs: gpd.GeoDataFrame, utm_profile: dict, script_dir: 
     print("  Reprojecting LULC to DEM grid …")
     lulc_utm = np.empty((1, utm_profile["height"], utm_profile["width"]), dtype=np.uint8)
     
-    # Optional handling if nodata is not set or None
     src_nodata = mosaic_profile.get("nodata", 0)
     
     reproject(
